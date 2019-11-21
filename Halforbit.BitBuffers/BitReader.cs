@@ -4,13 +4,8 @@ using System.Threading;
 
 namespace Halforbit.BitBuffers
 {
-    /// <summary>
-    /// Base class for NetIncomingMessage and NetOutgoingMessage
-    /// </summary>
     public partial class BitReader : BitBuffer
 	{
-		const string ReadOverflowError = "Trying to read past the buffer size - likely caused by mismatching Write/Reads, different size or order.";
-		
         const int BufferSize = 64; // Min 8 to hold anything but strings. Increase it if readed strings usally don't fit inside the buffer
 		
         static object _buffer;
@@ -41,7 +36,7 @@ namespace Halforbit.BitBuffers
         /// </summary>
         public bool ReadBoolean()
 		{
-			BitBufferException.Assert(_lengthBits - _readPosition >= 1, ReadOverflowError);
+            ReadOverflowException.Assert(_lengthBits - _readPosition >= 1);
 			byte retval = BitReaderWriter.ReadByte(_data, 1, _readPosition);
 			_readPosition += 1;
 			return (retval > 0 ? true : false);
@@ -59,7 +54,7 @@ namespace Halforbit.BitBuffers
 		/// </summary>
 		public byte ReadByte()
 		{
-			BitBufferException.Assert(_lengthBits - _readPosition >= 8, ReadOverflowError);
+			ReadOverflowException.Assert(_lengthBits - _readPosition >= 8);
 			byte retval = BitReaderWriter.ReadByte(_data, 8, _readPosition);
 			_readPosition += 8;
 			return retval;
@@ -77,7 +72,7 @@ namespace Halforbit.BitBuffers
 		/// </summary>
 		public sbyte ReadSByte()
 		{
-			BitBufferException.Assert(_lengthBits - _readPosition >= 8, ReadOverflowError);
+			ReadOverflowException.Assert(_lengthBits - _readPosition >= 8);
 			byte retval = BitReaderWriter.ReadByte(_data, 8, _readPosition);
 			_readPosition += 8;
 			return (sbyte)retval;
@@ -113,7 +108,7 @@ namespace Halforbit.BitBuffers
         /// </summary>
         public byte[] ReadBytes(int numberOfBytes)
 		{
-			BitBufferException.Assert(_lengthBits - _readPosition + 7 >= (numberOfBytes * 8), ReadOverflowError);
+			ReadOverflowException.Assert(_lengthBits - _readPosition + 7 >= (numberOfBytes * 8));
 
 			byte[] retval = new byte[numberOfBytes];
 			BitReaderWriter.ReadBytes(_data, numberOfBytes, _readPosition, retval, 0);
@@ -136,7 +131,7 @@ namespace Halforbit.BitBuffers
 		/// <param name="numberOfBytes">The number of bytes to read</param>
 		public BitReader ReadBytes(byte[] into, int offset, int numberOfBytes)
 		{
-			BitBufferException.Assert(_lengthBits - _readPosition + 7 >= (numberOfBytes * 8), ReadOverflowError);
+			ReadOverflowException.Assert(_lengthBits - _readPosition + 7 >= (numberOfBytes * 8));
 			BitBufferException.Assert(offset + numberOfBytes <= into.Length);
 
 			BitReaderWriter.ReadBytes(_data, numberOfBytes, _readPosition, into, offset);
@@ -153,7 +148,7 @@ namespace Halforbit.BitBuffers
 		/// <param name="numberOfBits">The number of bits to read</param>
 		public BitReader ReadBits(byte[] into, int offset, int numberOfBits)
 		{
-			BitBufferException.Assert(_lengthBits - _readPosition >= numberOfBits, ReadOverflowError);
+			ReadOverflowException.Assert(_lengthBits - _readPosition >= numberOfBits);
 			BitBufferException.Assert(offset + BitUtility.BytesToHoldBits(numberOfBits) <= into.Length);
 
 			int numberOfWholeBytes = numberOfBits / 8;
@@ -173,7 +168,7 @@ namespace Halforbit.BitBuffers
 		/// </summary>
 		public Int16 ReadInt16()
 		{
-			BitBufferException.Assert(_lengthBits - _readPosition >= 16, ReadOverflowError);
+			ReadOverflowException.Assert(_lengthBits - _readPosition >= 16);
 			uint retval = BitReaderWriter.ReadUInt16(_data, 16, _readPosition);
 			_readPosition += 16;
 			return (short)retval;
@@ -191,7 +186,7 @@ namespace Halforbit.BitBuffers
         /// </summary>
         public UInt16 ReadUInt16()
 		{
-			BitBufferException.Assert(_lengthBits - _readPosition >= 16, ReadOverflowError);
+			ReadOverflowException.Assert(_lengthBits - _readPosition >= 16);
 			uint retval = BitReaderWriter.ReadUInt16(_data, 16, _readPosition);
 			_readPosition += 16;
 			return (ushort)retval;
@@ -209,7 +204,7 @@ namespace Halforbit.BitBuffers
         /// </summary>
         public Int32 ReadInt32()
 		{
-			BitBufferException.Assert(_lengthBits - _readPosition >= 32, ReadOverflowError);
+			ReadOverflowException.Assert(_lengthBits - _readPosition >= 32);
 			uint retval = BitReaderWriter.ReadUInt32(_data, 32, _readPosition);
 			_readPosition += 32;
 			return (Int32)retval;
@@ -228,7 +223,7 @@ namespace Halforbit.BitBuffers
         public Int32 ReadInt32(int numberOfBits)
 		{
 			BitBufferException.Assert(numberOfBits > 0 && numberOfBits <= 32, "ReadInt32(bits) can only read between 1 and 32 bits");
-			BitBufferException.Assert(_lengthBits - _readPosition >= numberOfBits, ReadOverflowError);
+			ReadOverflowException.Assert(_lengthBits - _readPosition >= numberOfBits);
 
 			uint retval = BitReaderWriter.ReadUInt32(_data, numberOfBits, _readPosition);
 			_readPosition += numberOfBits;
@@ -261,7 +256,7 @@ namespace Halforbit.BitBuffers
         /// </summary>
         public UInt32 ReadUInt32()
 		{
-			BitBufferException.Assert(_lengthBits - _readPosition >= 32, ReadOverflowError);
+			ReadOverflowException.Assert(_lengthBits - _readPosition >= 32);
 			uint retval = BitReaderWriter.ReadUInt32(_data, 32, _readPosition);
 			_readPosition += 32;
 			return retval;
@@ -299,7 +294,7 @@ namespace Halforbit.BitBuffers
         /// </summary>
         public UInt64 ReadUInt64()
 		{
-			BitBufferException.Assert(_lengthBits - _readPosition >= 64, ReadOverflowError);
+			ReadOverflowException.Assert(_lengthBits - _readPosition >= 64);
 
 			ulong low = BitReaderWriter.ReadUInt32(_data, 32, _readPosition);
 			_readPosition += 32;
@@ -323,7 +318,7 @@ namespace Halforbit.BitBuffers
         /// </summary>
         public Int64 ReadInt64()
 		{
-			BitBufferException.Assert(_lengthBits - _readPosition >= 64, ReadOverflowError);
+			ReadOverflowException.Assert(_lengthBits - _readPosition >= 64);
 			unchecked
 			{
 				ulong retval = ReadUInt64();
@@ -345,7 +340,7 @@ namespace Halforbit.BitBuffers
         public UInt64 ReadUInt64(int numberOfBits)
 		{
 			BitBufferException.Assert(numberOfBits > 0 && numberOfBits <= 64, "ReadUInt64(bits) can only read between 1 and 64 bits");
-			BitBufferException.Assert(_lengthBits - _readPosition >= numberOfBits, ReadOverflowError);
+			ReadOverflowException.Assert(_lengthBits - _readPosition >= numberOfBits);
 
 			ulong retval;
 			if (numberOfBits <= 32)
@@ -404,7 +399,7 @@ namespace Halforbit.BitBuffers
         /// </summary>
         public float ReadSingle()
 		{
-			BitBufferException.Assert(_lengthBits - _readPosition >= 32, ReadOverflowError);
+			ReadOverflowException.Assert(_lengthBits - _readPosition >= 32);
 
 			if ((_readPosition & 7) == 0) // read directly
 			{
@@ -432,7 +427,7 @@ namespace Halforbit.BitBuffers
         /// </summary>
         public double ReadDouble()
 		{
-			BitBufferException.Assert(_lengthBits - _readPosition >= 64, ReadOverflowError);
+			ReadOverflowException.Assert(_lengthBits - _readPosition >= 64);
 
 			if ((_readPosition & 7) == 0) // read directly
 			{
@@ -667,7 +662,7 @@ namespace Halforbit.BitBuffers
 			if ((ulong)(_lengthBits - _readPosition) < ((ulong)byteLen * 8))
 			{
 				// not enough data
-				throw new BitBufferException(ReadOverflowError);
+				throw new ReadOverflowException();
 			}
 
 			if ((_readPosition & 7) == 0)

@@ -12,17 +12,21 @@ namespace Halforbit.BitBuffers.Tests
 
             bitWriter
                 .WriteEnum(TestEnumEcho.Bravo, 1)
+                .Write((short)-123)
                 .Write((BigInteger)123);
 
-            Assert.Equal(17, bitWriter.LengthBits);
+            Assert.Equal(33, bitWriter.LengthBits);
 
             var bitReader = new BitReader(bitWriter);
 
             bitReader
                 .ReadEnum<TestEnumEcho>(1, out var echo)
+                .ReadInt16(out var shorty)
                 .ReadBigInteger(out var bigInteger);
 
             Assert.Equal(TestEnumEcho.Bravo, echo);
+
+            Assert.Equal(-123, shorty);
 
             Assert.Equal(123, bigInteger);
         }
