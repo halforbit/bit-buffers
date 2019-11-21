@@ -8,18 +8,18 @@ namespace Halforbit.BitBuffers.Tests
         [Fact]
         public void WriteRead_Enum_BigInteger_Success()
         {
-            var output = new BitBuffer();
+            var bitWriter = new BitWriter();
 
-            output
-                .WriteEnum(TestEnumEcho.Bravo, 2)
+            bitWriter
+                .WriteEnum(TestEnumEcho.Bravo, 1)
                 .Write((BigInteger)123);
 
-            Assert.Equal(18, output.LengthBits);
+            Assert.Equal(17, bitWriter.LengthBits);
 
-            var input = new BitBuffer(output);
+            var bitReader = new BitReader(bitWriter);
 
-            input
-                .ReadEnum<TestEnumEcho>(2, out var echo)
+            bitReader
+                .ReadEnum<TestEnumEcho>(1, out var echo)
                 .ReadBigInteger(out var bigInteger);
 
             Assert.Equal(TestEnumEcho.Bravo, echo);
@@ -30,9 +30,7 @@ namespace Halforbit.BitBuffers.Tests
 
     public enum TestEnumEcho : byte
     {
-        Unknown = 0,
-
-        Alfa,
+        Alfa = 0,
 
         Bravo
     }

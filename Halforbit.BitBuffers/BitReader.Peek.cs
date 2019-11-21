@@ -2,7 +2,7 @@
 
 namespace Halforbit.BitBuffers
 {
-    public partial class BitBuffer
+    public partial class BitReader
 	{
 		/// <summary>
 		/// Gets the data buffer
@@ -17,7 +17,7 @@ namespace Halforbit.BitBuffers
 		/// </summary>
 		public bool PeekBoolean()
 		{
-			BitBufferException.Assert(_lengthBits - _readPosition >= 1, c_readOverflowError);
+			BitBufferException.Assert(_lengthBits - _readPosition >= 1, ReadOverflowError);
 			byte retval = BitReaderWriter.ReadByte(_data, 1, _readPosition);
 			return (retval > 0 ? true : false);
 		}
@@ -30,7 +30,7 @@ namespace Halforbit.BitBuffers
 		/// </summary>
 		public byte PeekByte()
 		{
-			BitBufferException.Assert(_lengthBits - _readPosition >= 8, c_readOverflowError);
+			BitBufferException.Assert(_lengthBits - _readPosition >= 8, ReadOverflowError);
 			byte retval = BitReaderWriter.ReadByte(_data, 8, _readPosition);
 			return retval;
 		}
@@ -40,7 +40,7 @@ namespace Halforbit.BitBuffers
 		/// </summary>
 		public sbyte PeekSByte()
 		{
-			BitBufferException.Assert(_lengthBits - _readPosition >= 8, c_readOverflowError);
+			BitBufferException.Assert(_lengthBits - _readPosition >= 8, ReadOverflowError);
 			byte retval = BitReaderWriter.ReadByte(_data, 8, _readPosition);
 			return (sbyte)retval;
 		}
@@ -59,7 +59,7 @@ namespace Halforbit.BitBuffers
 		/// </summary>
 		public byte[] PeekBytes(int numberOfBytes)
 		{
-			BitBufferException.Assert(_lengthBits - _readPosition >= (numberOfBytes * 8), c_readOverflowError);
+			BitBufferException.Assert(_lengthBits - _readPosition >= (numberOfBytes * 8), ReadOverflowError);
 
 			byte[] retval = new byte[numberOfBytes];
 			BitReaderWriter.ReadBytes(_data, numberOfBytes, _readPosition, retval, 0);
@@ -71,7 +71,7 @@ namespace Halforbit.BitBuffers
 		/// </summary>
 		public void PeekBytes(byte[] into, int offset, int numberOfBytes)
 		{
-			BitBufferException.Assert(_lengthBits - _readPosition >= (numberOfBytes * 8), c_readOverflowError);
+			BitBufferException.Assert(_lengthBits - _readPosition >= (numberOfBytes * 8), ReadOverflowError);
 			BitBufferException.Assert(offset + numberOfBytes <= into.Length);
 
 			BitReaderWriter.ReadBytes(_data, numberOfBytes, _readPosition, into, offset);
@@ -86,7 +86,7 @@ namespace Halforbit.BitBuffers
 		/// </summary>
 		public Int16 PeekInt16()
 		{
-			BitBufferException.Assert(_lengthBits - _readPosition >= 16, c_readOverflowError);
+			BitBufferException.Assert(_lengthBits - _readPosition >= 16, ReadOverflowError);
 			uint retval = BitReaderWriter.ReadUInt16(_data, 16, _readPosition);
 			return (short)retval;
 		}
@@ -96,7 +96,7 @@ namespace Halforbit.BitBuffers
 		/// </summary>
 		public UInt16 PeekUInt16()
 		{
-			BitBufferException.Assert(_lengthBits - _readPosition >= 16, c_readOverflowError);
+			BitBufferException.Assert(_lengthBits - _readPosition >= 16, ReadOverflowError);
 			uint retval = BitReaderWriter.ReadUInt16(_data, 16, _readPosition);
 			return (ushort)retval;
 		}
@@ -109,7 +109,7 @@ namespace Halforbit.BitBuffers
 		/// </summary>
 		public Int32 PeekInt32()
 		{
-			BitBufferException.Assert(_lengthBits - _readPosition >= 32, c_readOverflowError);
+			BitBufferException.Assert(_lengthBits - _readPosition >= 32, ReadOverflowError);
 			uint retval = BitReaderWriter.ReadUInt32(_data, 32, _readPosition);
 			return (Int32)retval;
 		}
@@ -120,7 +120,7 @@ namespace Halforbit.BitBuffers
 		public Int32 PeekInt32(int numberOfBits)
 		{
 			BitBufferException.Assert((numberOfBits > 0 && numberOfBits <= 32), "ReadInt() can only read between 1 and 32 bits");
-			BitBufferException.Assert(_lengthBits - _readPosition >= numberOfBits, c_readOverflowError);
+			BitBufferException.Assert(_lengthBits - _readPosition >= numberOfBits, ReadOverflowError);
 
 			uint retval = BitReaderWriter.ReadUInt32(_data, numberOfBits, _readPosition);
 
@@ -145,7 +145,7 @@ namespace Halforbit.BitBuffers
 		/// </summary>
 		public UInt32 PeekUInt32()
 		{
-			BitBufferException.Assert(_lengthBits - _readPosition >= 32, c_readOverflowError);
+			BitBufferException.Assert(_lengthBits - _readPosition >= 32, ReadOverflowError);
 			uint retval = BitReaderWriter.ReadUInt32(_data, 32, _readPosition);
 			return retval;
 		}
@@ -170,7 +170,7 @@ namespace Halforbit.BitBuffers
 		/// </summary>
 		public UInt64 PeekUInt64()
 		{
-			BitBufferException.Assert(_lengthBits - _readPosition >= 64, c_readOverflowError);
+			BitBufferException.Assert(_lengthBits - _readPosition >= 64, ReadOverflowError);
 
 			ulong low = BitReaderWriter.ReadUInt32(_data, 32, _readPosition);
 			ulong high = BitReaderWriter.ReadUInt32(_data, 32, _readPosition + 32);
@@ -185,7 +185,7 @@ namespace Halforbit.BitBuffers
 		/// </summary>
 		public Int64 PeekInt64()
 		{
-			BitBufferException.Assert(_lengthBits - _readPosition >= 64, c_readOverflowError);
+			BitBufferException.Assert(_lengthBits - _readPosition >= 64, ReadOverflowError);
 			unchecked
 			{
 				ulong retval = PeekUInt64();
@@ -200,7 +200,7 @@ namespace Halforbit.BitBuffers
 		public UInt64 PeekUInt64(int numberOfBits)
 		{
 			BitBufferException.Assert((numberOfBits > 0 && numberOfBits <= 64), "ReadUInt() can only read between 1 and 64 bits");
-			BitBufferException.Assert(_lengthBits - _readPosition >= numberOfBits, c_readOverflowError);
+			BitBufferException.Assert(_lengthBits - _readPosition >= numberOfBits, ReadOverflowError);
 
 			ulong retval;
 			if (numberOfBits <= 32)
@@ -240,7 +240,7 @@ namespace Halforbit.BitBuffers
 		/// </summary>
 		public float PeekSingle()
 		{
-			BitBufferException.Assert(_lengthBits - _readPosition >= 32, c_readOverflowError);
+			BitBufferException.Assert(_lengthBits - _readPosition >= 32, ReadOverflowError);
 
 			if ((_readPosition & 7) == 0) // read directly
 			{
@@ -257,7 +257,7 @@ namespace Halforbit.BitBuffers
 		/// </summary>
 		public double PeekDouble()
 		{
-			BitBufferException.Assert(_lengthBits - _readPosition >= 64, c_readOverflowError);
+			BitBufferException.Assert(_lengthBits - _readPosition >= 64, ReadOverflowError);
 
 			if ((_readPosition & 7) == 0) // read directly
 			{

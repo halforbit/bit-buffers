@@ -8,24 +8,47 @@ namespace Halforbit.BitBuffers
     /// <summary>
     /// Base class for NetIncomingMessage and NetOutgoingMessage
     /// </summary>
-    public partial class BitBuffer
+    public partial class BitReader : BitBuffer
 	{
-		private const string c_readOverflowError = "Trying to read past the buffer size - likely caused by mismatching Write/Reads, different size or order.";
-		private const int c_bufferSize = 64; // Min 8 to hold anything but strings. Increase it if readed strings usally don't fit inside the buffer
-		private static object s_buffer;
+		const string ReadOverflowError = "Trying to read past the buffer size - likely caused by mismatching Write/Reads, different size or order.";
+		
+        const int BufferSize = 64; // Min 8 to hold anything but strings. Increase it if readed strings usally don't fit inside the buffer
+		
+        static object _buffer;
 
-		/// <summary>
-		/// Reads a boolean value (stored as a single bit) written using Write(bool)
-		/// </summary>
-		public bool ReadBoolean()
+        protected int _readPosition;
+
+        public BitReader(byte[] data)
+        {
+            _data = data;
+
+            _lengthBits = data.Length * 8;
+        }
+
+        /// <summary>
+        /// Gets the read position in the buffer, in bits (not bytes)
+        /// </summary>
+        public long Position => _readPosition;
+
+        /// <summary>
+        /// Gets the position in the buffer in bytes; note that the bits of the first returned byte may already have been read - check the Position property to make sure.
+        /// </summary>
+        public int PositionInBytes => (_readPosition / 8);
+
+        public static implicit operator BitReader(byte[] bytes) => new BitReader(bytes);
+
+        /// <summary>
+        /// Reads a boolean value (stored as a single bit) written using Write(bool)
+        /// </summary>
+        public bool ReadBoolean()
 		{
-			BitBufferException.Assert(_lengthBits - _readPosition >= 1, c_readOverflowError);
+			BitBufferException.Assert(_lengthBits - _readPosition >= 1, ReadOverflowError);
 			byte retval = BitReaderWriter.ReadByte(_data, 1, _readPosition);
 			_readPosition += 1;
 			return (retval > 0 ? true : false);
 		}
 		
-        public BitBuffer ReadBoolean(out bool value)
+        public BitReader ReadBoolean(out bool value)
         {
             value = ReadBoolean();
 
@@ -37,13 +60,13 @@ namespace Halforbit.BitBuffers
 		/// </summary>
 		public byte ReadByte()
 		{
-			BitBufferException.Assert(_lengthBits - _readPosition >= 8, c_readOverflowError);
+			BitBufferException.Assert(_lengthBits - _readPosition >= 8, ReadOverflowError);
 			byte retval = BitReaderWriter.ReadByte(_data, 8, _readPosition);
 			_readPosition += 8;
 			return retval;
 		}
 
-        public BitBuffer ReadByte(out byte value)
+        public BitReader ReadByte(out byte value)
         {
             value = ReadByte();
 
@@ -55,13 +78,13 @@ namespace Halforbit.BitBuffers
 		/// </summary>
 		public sbyte ReadSByte()
 		{
-			BitBufferException.Assert(_lengthBits - _readPosition >= 8, c_readOverflowError);
+			BitBufferException.Assert(_lengthBits - _readPosition >= 8, ReadOverflowError);
 			byte retval = BitReaderWriter.ReadByte(_data, 8, _readPosition);
 			_readPosition += 8;
 			return (sbyte)retval;
 		}
 
-        public BitBuffer ReadSByte(out sbyte value)
+        public BitReader ReadSByte(out sbyte value)
         {
             value = ReadSByte();
 
@@ -79,7 +102,7 @@ namespace Halforbit.BitBuffers
 			return retval;
 		}
 
-        public BitBuffer ReadByte(int numberOfBits, out byte value)
+        public BitReader ReadByte(int numberOfBits, out byte value)
         {
             value = ReadByte(numberOfBits);
 
@@ -91,7 +114,7 @@ namespace Halforbit.BitBuffers
         /// </summary>
         public byte[] ReadBytes(int numberOfBytes)
 		{
-			BitBufferException.Assert(_lengthBits - _readPosition + 7 >= (numberOfBytes * 8), c_readOverflowError);
+			BitBufferException.Assert(_lengthBits - _readPosition + 7 >= (numberOfBytes * 8), ReadOverflowError);
 
 			byte[] retval = new byte[numberOfBytes];
 			BitReaderWriter.ReadBytes(_data, numberOfBytes, _readPosition, retval, 0);
@@ -99,7 +122,7 @@ namespace Halforbit.BitBuffers
 			return retval;
 		}
 
-        public BitBuffer Read(int numberOfBytes, out byte[] value)
+        public BitReader Read(int numberOfBytes, out byte[] value)
         {
             value = ReadBytes(numberOfBytes);
 
@@ -112,9 +135,9 @@ namespace Halforbit.BitBuffers
 		/// <param name="into">The destination array</param>
 		/// <param name="offset">The offset where to start writing in the destination array</param>
 		/// <param name="numberOfBytes">The number of bytes to read</param>
-		public BitBuffer ReadBytes(byte[] into, int offset, int numberOfBytes)
+		public BitReader ReadBytes(byte[] into, int offset, int numberOfBytes)
 		{
-			BitBufferException.Assert(_lengthBits - _readPosition + 7 >= (numberOfBytes * 8), c_readOverflowError);
+			BitBufferException.Assert(_lengthBits - _readPosition + 7 >= (numberOfBytes * 8), ReadOverflowError);
 			BitBufferException.Assert(offset + numberOfBytes <= into.Length);
 
 			BitReaderWriter.ReadBytes(_data, numberOfBytes, _readPosition, into, offset);
@@ -129,9 +152,9 @@ namespace Halforbit.BitBuffers
 		/// <param name="into">The destination array</param>
 		/// <param name="offset">The offset where to start writing in the destination array</param>
 		/// <param name="numberOfBits">The number of bits to read</param>
-		public BitBuffer ReadBits(byte[] into, int offset, int numberOfBits)
+		public BitReader ReadBits(byte[] into, int offset, int numberOfBits)
 		{
-			BitBufferException.Assert(_lengthBits - _readPosition >= numberOfBits, c_readOverflowError);
+			BitBufferException.Assert(_lengthBits - _readPosition >= numberOfBits, ReadOverflowError);
 			BitBufferException.Assert(offset + BitUtility.BytesToHoldBits(numberOfBits) <= into.Length);
 
 			int numberOfWholeBytes = numberOfBits / 8;
@@ -151,13 +174,13 @@ namespace Halforbit.BitBuffers
 		/// </summary>
 		public Int16 ReadInt16()
 		{
-			BitBufferException.Assert(_lengthBits - _readPosition >= 16, c_readOverflowError);
+			BitBufferException.Assert(_lengthBits - _readPosition >= 16, ReadOverflowError);
 			uint retval = BitReaderWriter.ReadUInt16(_data, 16, _readPosition);
 			_readPosition += 16;
 			return (short)retval;
 		}
 
-        public BitBuffer ReadInt16(out Int16 value)
+        public BitReader ReadInt16(out Int16 value)
         {
             value = ReadInt16();
 
@@ -169,13 +192,13 @@ namespace Halforbit.BitBuffers
         /// </summary>
         public UInt16 ReadUInt16()
 		{
-			BitBufferException.Assert(_lengthBits - _readPosition >= 16, c_readOverflowError);
+			BitBufferException.Assert(_lengthBits - _readPosition >= 16, ReadOverflowError);
 			uint retval = BitReaderWriter.ReadUInt16(_data, 16, _readPosition);
 			_readPosition += 16;
 			return (ushort)retval;
 		}
 
-        public BitBuffer ReadUInt16(out UInt16 value)
+        public BitReader ReadUInt16(out UInt16 value)
         {
             value = ReadUInt16();
 
@@ -187,13 +210,13 @@ namespace Halforbit.BitBuffers
         /// </summary>
         public Int32 ReadInt32()
 		{
-			BitBufferException.Assert(_lengthBits - _readPosition >= 32, c_readOverflowError);
+			BitBufferException.Assert(_lengthBits - _readPosition >= 32, ReadOverflowError);
 			uint retval = BitReaderWriter.ReadUInt32(_data, 32, _readPosition);
 			_readPosition += 32;
 			return (Int32)retval;
 		}
 
-        public BitBuffer ReadInt32(out Int32 value)
+        public BitReader ReadInt32(out Int32 value)
         {
             value = ReadInt32();
 
@@ -206,7 +229,7 @@ namespace Halforbit.BitBuffers
         public Int32 ReadInt32(int numberOfBits)
 		{
 			BitBufferException.Assert(numberOfBits > 0 && numberOfBits <= 32, "ReadInt32(bits) can only read between 1 and 32 bits");
-			BitBufferException.Assert(_lengthBits - _readPosition >= numberOfBits, c_readOverflowError);
+			BitBufferException.Assert(_lengthBits - _readPosition >= numberOfBits, ReadOverflowError);
 
 			uint retval = BitReaderWriter.ReadUInt32(_data, numberOfBits, _readPosition);
 			_readPosition += numberOfBits;
@@ -227,7 +250,7 @@ namespace Halforbit.BitBuffers
 			}
 		}
 
-        public BitBuffer ReadInt32(int numberOfBits, out Int32 value)
+        public BitReader ReadInt32(int numberOfBits, out Int32 value)
         {
             value = ReadInt32(numberOfBits);
 
@@ -239,13 +262,13 @@ namespace Halforbit.BitBuffers
         /// </summary>
         public UInt32 ReadUInt32()
 		{
-			BitBufferException.Assert(_lengthBits - _readPosition >= 32, c_readOverflowError);
+			BitBufferException.Assert(_lengthBits - _readPosition >= 32, ReadOverflowError);
 			uint retval = BitReaderWriter.ReadUInt32(_data, 32, _readPosition);
 			_readPosition += 32;
 			return retval;
 		}
 
-        public BitBuffer ReadUInt32(out UInt32 value)
+        public BitReader ReadUInt32(out UInt32 value)
         {
             value = ReadUInt32();
 
@@ -265,7 +288,7 @@ namespace Halforbit.BitBuffers
 			return retval;
 		}
 
-        public BitBuffer Read(int numberOfBits, out UInt32 value)
+        public BitReader Read(int numberOfBits, out UInt32 value)
         {
             value = ReadUInt32(numberOfBits);
 
@@ -277,7 +300,7 @@ namespace Halforbit.BitBuffers
         /// </summary>
         public UInt64 ReadUInt64()
 		{
-			BitBufferException.Assert(_lengthBits - _readPosition >= 64, c_readOverflowError);
+			BitBufferException.Assert(_lengthBits - _readPosition >= 64, ReadOverflowError);
 
 			ulong low = BitReaderWriter.ReadUInt32(_data, 32, _readPosition);
 			_readPosition += 32;
@@ -289,7 +312,7 @@ namespace Halforbit.BitBuffers
 			return retval;
 		}
 
-        public BitBuffer Read(out UInt64 value)
+        public BitReader Read(out UInt64 value)
         {
             value = ReadUInt64();
 
@@ -301,7 +324,7 @@ namespace Halforbit.BitBuffers
         /// </summary>
         public Int64 ReadInt64()
 		{
-			BitBufferException.Assert(_lengthBits - _readPosition >= 64, c_readOverflowError);
+			BitBufferException.Assert(_lengthBits - _readPosition >= 64, ReadOverflowError);
 			unchecked
 			{
 				ulong retval = ReadUInt64();
@@ -310,7 +333,7 @@ namespace Halforbit.BitBuffers
 			}
 		}
 
-        public BitBuffer ReadInt64(out Int64 value)
+        public BitReader ReadInt64(out Int64 value)
         {
             value = ReadInt64();
 
@@ -323,7 +346,7 @@ namespace Halforbit.BitBuffers
         public UInt64 ReadUInt64(int numberOfBits)
 		{
 			BitBufferException.Assert(numberOfBits > 0 && numberOfBits <= 64, "ReadUInt64(bits) can only read between 1 and 64 bits");
-			BitBufferException.Assert(_lengthBits - _readPosition >= numberOfBits, c_readOverflowError);
+			BitBufferException.Assert(_lengthBits - _readPosition >= numberOfBits, ReadOverflowError);
 
 			ulong retval;
 			if (numberOfBits <= 32)
@@ -339,7 +362,7 @@ namespace Halforbit.BitBuffers
 			return retval;
 		}
 
-        public BitBuffer ReadUInt64(out UInt64 value)
+        public BitReader ReadUInt64(out UInt64 value)
         {
             value = ReadUInt64();
 
@@ -355,7 +378,7 @@ namespace Halforbit.BitBuffers
 			return (long)ReadUInt64(numberOfBits);
 		}
 
-        public BitBuffer ReadInt64(int numberOfBits, out Int64 value)
+        public BitReader ReadInt64(int numberOfBits, out Int64 value)
         {
             value = ReadInt64(numberOfBits);
 
@@ -370,7 +393,7 @@ namespace Halforbit.BitBuffers
 			return ReadSingle();
 		}
 
-        public BitBuffer ReadFloat(out float value)
+        public BitReader ReadFloat(out float value)
         {
             value = ReadFloat();
 
@@ -382,7 +405,7 @@ namespace Halforbit.BitBuffers
         /// </summary>
         public float ReadSingle()
 		{
-			BitBufferException.Assert(_lengthBits - _readPosition >= 32, c_readOverflowError);
+			BitBufferException.Assert(_lengthBits - _readPosition >= 32, ReadOverflowError);
 
 			if ((_readPosition & 7) == 0) // read directly
 			{
@@ -391,14 +414,14 @@ namespace Halforbit.BitBuffers
 				return retval;
 			}
 
-			byte[] bytes = (byte[]) Interlocked.Exchange(ref s_buffer, null) ?? new byte[c_bufferSize];
+			byte[] bytes = (byte[]) Interlocked.Exchange(ref _buffer, null) ?? new byte[BufferSize];
 			ReadBytes(bytes, 0, 4);
 			float res = BitConverter.ToSingle(bytes, 0);
-			s_buffer = bytes;
+			_buffer = bytes;
 			return res;
 		}
 
-        public BitBuffer ReadSingle(out float value)
+        public BitReader ReadSingle(out float value)
         {
             value = ReadSingle();
 
@@ -410,7 +433,7 @@ namespace Halforbit.BitBuffers
         /// </summary>
         public double ReadDouble()
 		{
-			BitBufferException.Assert(_lengthBits - _readPosition >= 64, c_readOverflowError);
+			BitBufferException.Assert(_lengthBits - _readPosition >= 64, ReadOverflowError);
 
 			if ((_readPosition & 7) == 0) // read directly
 			{
@@ -420,14 +443,14 @@ namespace Halforbit.BitBuffers
 				return retval;
 			}
 
-			byte[] bytes = (byte[]) Interlocked.Exchange(ref s_buffer, null) ?? new byte[c_bufferSize];
+			byte[] bytes = (byte[]) Interlocked.Exchange(ref _buffer, null) ?? new byte[BufferSize];
 			ReadBytes(bytes, 0, 8);
 			double res = BitConverter.ToDouble(bytes, 0);
-			s_buffer = bytes;
+			_buffer = bytes;
 			return res;
 		}
 
-        public BitBuffer ReadDouble(out double value)
+        public BitReader ReadDouble(out double value)
         {
             value = ReadDouble();
 
@@ -458,7 +481,7 @@ namespace Halforbit.BitBuffers
 			return (uint)num1;
 		}
 
-        public BitBuffer ReadVariableUInt32(out uint value)
+        public BitReader ReadVariableUInt32(out uint value)
         {
             value = ReadVariableUInt32();
 
@@ -474,7 +497,7 @@ namespace Halforbit.BitBuffers
 			return (int)(n >> 1) ^ -(int)(n & 1); // decode zigzag
 		}
 
-        public BitBuffer ReadVariableInt32(out int value)
+        public BitReader ReadVariableInt32(out int value)
         {
             value = ReadVariableInt32();
 
@@ -490,7 +513,7 @@ namespace Halforbit.BitBuffers
 			return (Int64)(n >> 1) ^ -(long)(n & 1); // decode zigzag
 		}
 
-        public BitBuffer ReadVariableInt64(out Int64 value)
+        public BitReader ReadVariableInt64(out Int64 value)
         {
             value = ReadInt64();
 
@@ -520,7 +543,7 @@ namespace Halforbit.BitBuffers
 			return num1;
 		}
 
-        public BitBuffer ReadVariableUInt64(out UInt64 value)
+        public BitReader ReadVariableUInt64(out UInt64 value)
         {
             value = ReadUInt64();
 
@@ -539,7 +562,7 @@ namespace Halforbit.BitBuffers
 			return ((float)(encodedVal + 1) / (float)(maxVal + 1) - 0.5f) * 2.0f;
 		}
 
-        public BitBuffer ReadSignedSingle(int numberOfBits, out float value)
+        public BitReader ReadSignedSingle(int numberOfBits, out float value)
         {
             value = ReadSignedSingle(numberOfBits);
 
@@ -558,7 +581,7 @@ namespace Halforbit.BitBuffers
 			return (float)(encodedVal + 1) / (float)(maxVal + 1);
 		}
 
-        public BitBuffer ReadUnitSingle(int numberOfBits, out float value)
+        public BitReader ReadUnitSingle(int numberOfBits, out float value)
         {
             value = ReadUnitSingle(numberOfBits);
 
@@ -581,7 +604,7 @@ namespace Halforbit.BitBuffers
 			return min + (unit * range);
 		}
 
-        public BitBuffer ReadRangedSingle(float min, float max, int numberOfBits, out float value)
+        public BitReader ReadRangedSingle(float min, float max, int numberOfBits, out float value)
         {
             value = ReadRangedSingle(min, max, numberOfBits);
 
@@ -603,7 +626,7 @@ namespace Halforbit.BitBuffers
 			return (int)(min + rvalue);
 		}
 
-        public BitBuffer ReadRangedInteger(int min, int max, out int value)
+        public BitReader ReadRangedInteger(int min, int max, out int value)
         {
             value = ReadRangedInteger(min, max);
 
@@ -625,7 +648,7 @@ namespace Halforbit.BitBuffers
 	        return min + (long)rvalue;
 	    }
 
-        public BitBuffer ReadRangedInteger(long min, long max, out long value)
+        public BitReader ReadRangedInteger(long min, long max, out long value)
         {
             value = ReadRangedInteger(min, max);
 
@@ -645,7 +668,7 @@ namespace Halforbit.BitBuffers
 			if ((ulong)(_lengthBits - _readPosition) < ((ulong)byteLen * 8))
 			{
 				// not enough data
-				throw new BitBufferException(c_readOverflowError);
+				throw new BitBufferException(ReadOverflowError);
 			}
 
 			if ((_readPosition & 7) == 0)
@@ -656,11 +679,11 @@ namespace Halforbit.BitBuffers
 				return retval;
 			}
 
-			if (byteLen <= c_bufferSize) {
-				byte[] buffer = (byte[]) Interlocked.Exchange(ref s_buffer, null) ?? new byte[c_bufferSize];
+			if (byteLen <= BufferSize) {
+				byte[] buffer = (byte[]) Interlocked.Exchange(ref _buffer, null) ?? new byte[BufferSize];
 				ReadBytes(buffer, 0, byteLen);
 				string retval = Encoding.UTF8.GetString(buffer, 0, byteLen);
-				s_buffer = buffer;
+				_buffer = buffer;
 				return retval;
 			} else {
 				byte[] bytes = ReadBytes(byteLen);
@@ -668,105 +691,9 @@ namespace Halforbit.BitBuffers
 			}
 		}
 
-        public BitBuffer ReadString(out string value)
+        public BitReader ReadString(out string value)
         {
             value = ReadString();
-
-            return this;
-        }
-
-        public BigInteger ReadBigInteger()
-        {
-            var length = ReadVariableUInt32();
-
-            var bytes = ReadBytes((int)length);
-
-            return new BigInteger(bytes);
-        }
-
-        public BitBuffer ReadBigInteger(out BigInteger value)
-        {
-            value = ReadBigInteger();
-
-            return this;
-        }
-
-        public TEnum ReadEnum<TEnum>() where TEnum : struct, IConvertible
-        {
-            var type = typeof(TEnum);
-
-            if (!type.IsEnum)
-            {
-                throw new ArgumentException($"{nameof(TEnum)} must be an enum type.");
-            }
-
-            var typeCode = default(TEnum).GetTypeCode();
-
-            switch (typeCode)
-            {
-                case TypeCode.Byte: return (TEnum)(object)ReadByte();
-
-                case TypeCode.SByte: return (TEnum)(object)ReadSByte();
-
-                case TypeCode.Int16: return (TEnum)(object)ReadInt16();
-
-                case TypeCode.UInt16: return (TEnum)(object)ReadUInt16();
-
-                case TypeCode.Int32: return (TEnum)(object)ReadVariableInt32();
-
-                case TypeCode.UInt32: return (TEnum)(object)ReadVariableUInt32();
-
-                case TypeCode.Int64: return (TEnum)(object)ReadVariableInt64();
-
-                case TypeCode.UInt64: return (TEnum)(object)ReadVariableUInt64();
-
-                default: throw new ArgumentException($"Enum {type.Name} is of unsupported type `{typeCode}`.");
-            }
-        }
-
-        public BitBuffer ReadEnum<TEnum>(out TEnum value) where TEnum : struct, IConvertible
-        {
-            value = ReadEnum<TEnum>();
-
-            return this;
-        }
-
-        public TEnum ReadEnum<TEnum>(int numberOfBits) where TEnum : struct, IConvertible
-        {
-            var type = typeof(TEnum);
-
-            if (!type.IsEnum)
-            {
-                throw new ArgumentException($"{nameof(TEnum)} must be an enum type.");
-            }
-
-            var typeCode = default(TEnum).GetTypeCode();
-
-            switch (typeCode)
-            {
-                case TypeCode.Byte: return (TEnum)(object)ReadByte(numberOfBits);
-
-                case TypeCode.SByte: 
-                case TypeCode.Int16: 
-                case TypeCode.UInt16:
-                    throw new NotSupportedException(
-                        $"Enum {type.Name} is of type `{typeCode}` which does not support a specified number of bits.");
-
-                case TypeCode.Int32: return (TEnum)(object)ReadInt32(numberOfBits);
-
-                case TypeCode.UInt32: return (TEnum)(object)ReadUInt32(numberOfBits);
-
-                case TypeCode.Int64: return (TEnum)(object)ReadInt64(numberOfBits);
-
-                case TypeCode.UInt64: return (TEnum)(object)ReadUInt64(numberOfBits);
-
-                default: throw new ArgumentException($"Enum {type.Name} is of unsupported type `{typeCode}`.");
-            }
-        }
-
-        public BitBuffer ReadEnum<TEnum>(int numberOfBits, out TEnum value) where TEnum : struct, IConvertible
-        {
-            value = ReadEnum<TEnum>(numberOfBits);
 
             return this;
         }
@@ -774,7 +701,7 @@ namespace Halforbit.BitBuffers
         /// <summary>
         /// Pads data with enough bits to reach a full byte. Decreases cpu usage for subsequent byte writes.
         /// </summary>
-        public BitBuffer SkipPadBits()
+        public BitReader SkipPadBits()
 		{
 			_readPosition = ((_readPosition + 7) >> 3) * 8;
 
@@ -784,7 +711,7 @@ namespace Halforbit.BitBuffers
 		/// <summary>
 		/// Pads data with enough bits to reach a full byte. Decreases cpu usage for subsequent byte writes.
 		/// </summary>
-		public BitBuffer ReadPadBits()
+		public BitReader ReadPadBits()
 		{
 			_readPosition = ((_readPosition + 7) >> 3) * 8;
             
@@ -794,7 +721,7 @@ namespace Halforbit.BitBuffers
 		/// <summary>
 		/// Pads data with the specified number of bits.
 		/// </summary>
-		public BitBuffer SkipPadBits(int numberOfBits)
+		public BitReader SkipPadBits(int numberOfBits)
 		{
 			_readPosition += numberOfBits;
 
