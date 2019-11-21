@@ -61,7 +61,7 @@ namespace Halforbit.BitBuffers
 			return (sbyte)retval;
 		}
 
-        public BitBuffer Read(out sbyte value)
+        public BitBuffer ReadSByte(out sbyte value)
         {
             value = ReadSByte();
 
@@ -245,7 +245,7 @@ namespace Halforbit.BitBuffers
 			return retval;
 		}
 
-        public BitBuffer Read(out UInt32 value)
+        public BitBuffer ReadUInt32(out UInt32 value)
         {
             value = ReadUInt32();
 
