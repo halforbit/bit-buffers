@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Lidgren.Network
+namespace Halforbit.BitBuffers
 {
     public partial class BitBuffer
 	{

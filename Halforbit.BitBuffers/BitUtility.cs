@@ -1,5 +1,5 @@
 ﻿
-namespace Lidgren.Network
+namespace Halforbit.BitBuffers
 {
     /// <summary>
     /// Utility methods

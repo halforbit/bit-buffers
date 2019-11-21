@@ -3,7 +3,7 @@
 using System;
 using System.Diagnostics;
 
-namespace Lidgren.Network
+namespace Halforbit.BitBuffers
 {
     /// <summary>
     /// Helper class for NetBuffer to write/read bits

@@ -4,7 +4,7 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Lidgren.Network
+namespace Halforbit.BitBuffers
 {
     /// <summary>
     /// Utility struct for writing Singles

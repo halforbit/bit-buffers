@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace Lidgren.Network
+namespace Halforbit.BitBuffers
 {
     /// <summary>
-    /// Exception thrown in the Lidgren Network Library
+    /// Exception thrown in the Halforbit.BitBuffers Library
     /// </summary>
     public sealed class BitBufferException : Exception
 	{

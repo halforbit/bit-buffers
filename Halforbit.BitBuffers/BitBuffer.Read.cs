@@ -3,7 +3,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading;
 
-namespace Lidgren.Network
+namespace Halforbit.BitBuffers
 {
     /// <summary>
     /// Base class for NetIncomingMessage and NetOutgoingMessage
