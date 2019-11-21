@@ -69,7 +69,7 @@ namespace Halforbit.BitBuffers
             return _epoch.AddSeconds(bitReader.ReadVariableUInt64());
         }
 
-        public static BitBuffer ReadEpochSeconds(
+        public static BitReader ReadEpochSeconds(
             this BitReader bitReader,
             out DateTime time)
         {
