@@ -116,7 +116,7 @@ namespace Halforbit.BitBuffers
 			return retval;
 		}
 
-        public BitReader Read(int numberOfBytes, out byte[] value)
+        public BitReader ReadBytes(int numberOfBytes, out byte[] value)
         {
             value = ReadBytes(numberOfBytes);
 
