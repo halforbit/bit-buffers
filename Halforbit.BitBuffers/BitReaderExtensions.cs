@@ -39,7 +39,7 @@ namespace Halforbit.BitBuffers
 
             for (var i = 0; i < count; i++)
             {
-                list[i] = func(bitReader);
+                list.Add(func(bitReader));
             }
 
             value = list;
@@ -57,7 +57,7 @@ namespace Halforbit.BitBuffers
 
             for (var i = 0; i < count; i++)
             {
-                list[i] = func(bitReader);
+                list.Add(func(bitReader));
             }
 
             return list;
