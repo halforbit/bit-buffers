@@ -50,15 +50,31 @@ namespace Halforbit.BitBuffers
             return bitWriter.WriteVariableUInt64((ulong)(time - _epoch).TotalSeconds);
         }
 
+        public static BitWriter WriteEpochMilliseconds(
+            this BitWriter bitWriter,
+            DateTime time)
+        {
+            return bitWriter.WriteVariableUInt64((ulong)(time - _epoch).TotalMilliseconds);
+        }
+
+        public static BitWriter Write(
+            this BitWriter bitWriter,
+            Guid guid)
+        {
+            return bitWriter.Write(guid.ToByteArray());
+        }
+
         public static BitWriter Write(
             this BitWriter bitWriter,
             BigInteger bigInteger)
         {
             var bytes = bigInteger.ToByteArray();
 
+            var length = (uint)bytes.Length;
+
             return bitWriter
-                .WriteVariableUInt32((uint)bytes.Length)
-                .Write(bytes);
+                .WriteVariableUInt32(length)
+                .Write(bytes, 0, (int)length);
         }
 
         public static BitWriter WriteEnum<TEnum>(

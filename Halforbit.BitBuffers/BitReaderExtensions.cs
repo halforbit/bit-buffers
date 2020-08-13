@@ -78,6 +78,38 @@ namespace Halforbit.BitBuffers
             return bitReader;
         }
 
+        public static DateTime ReadEpochMilliseconds(
+            this BitReader bitReader)
+        {
+            return _epoch.AddMilliseconds(bitReader.ReadVariableUInt64());
+        }
+
+        public static BitReader ReadEpochMilliseconds(
+            this BitReader bitReader,
+            out DateTime time)
+        {
+            time = _epoch.AddMilliseconds(bitReader.ReadVariableUInt64());
+
+            return bitReader;
+        }
+
+        public static Guid ReadGuid(
+            this BitReader bitReader)
+        {
+            var bytes = bitReader.ReadBytes(16);
+
+            return new Guid(bytes);
+        }
+
+        public static BitReader ReadGuid(
+            this BitReader bitReader,
+            out Guid value)
+        {
+            value = bitReader.ReadGuid();
+
+            return bitReader;
+        }
+
         public static BigInteger ReadBigInteger(
             this BitReader bitReader)
         {
